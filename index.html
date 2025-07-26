@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Preparation Chatbot</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+
+        .chat-container {
+            height: 500px;
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .user-message {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 12px 18px;
+            border-radius: 20px 20px 5px 20px;
+            margin-left: 20%;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .bot-message {
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            padding: 12px 18px;
+            border-radius: 20px 20px 20px 5px;
+            margin-right: 20%;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .question-card {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 15px;
+            margin: 10px 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .answer-card {
+            background: linear-gradient(135deg, #00d2d3 0%, #54a0ff 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 15px;
+            margin: 10px 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-gradient {
+            background: var(--primary-gradient);
+            border: none;
+            color: white;
+            transition: all 0.3s ease;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 600;
+        }
+
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+
+        .form-control {
+            border-radius: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 12px 20px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #667eea;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+            color: white;
+        }
+
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .form-select {
+            border-radius: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 12px 20px;
+        }
+
+        .form-select option {
+            background: #333;
+            color: white;
+        }
+
+        .hero-text {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .hero-text h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .difficulty-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .easy { background: #2ecc71; color: white; }
+        .medium { background: #f39c12; color: white; }
+        .hard { background: #e74c3c; color: white; }
+        .extreme { background: #8e44ad; color: white; }
+
+        .score-display {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-style: italic;
+            margin: 10px 0;
+        }
+
+        .typing-dots {
+            display: inline-block;
+            margin-left: 10px;
+        }
+
+        .typing-dots span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.7);
+            margin: 0 2px;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .quick-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .quick-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .quick-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="hero-text">
+            <h1><i class="fas fa-graduation-cap"></i> Exam Prep Bot</h1>
+            <p class="lead">Your AI Study Companion for Exam Preparation</p>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="glass-card p-4">
+                    <div class="score-display">
+                        <div class="row text-white">
+                            <div class="col-3">
+                                <h4 id="score">0</h4>
+                                <small>Score</small>
+                            </div>
+                            <div class="col-3">
+                                <h4 id="totalQuestions">0</h4>
+                                <small>Questions</small>
+                            </div>
+                            <div class="col-3">
+                                <h4 id="correctAnswers">0</h4>
+                                <small>Correct</small>
+                            </div>
+                            <div class="col-3">
+                                <h4 id="accuracy">0%</h4>
+                                <small>Accuracy</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chat-container" id="chatContainer">
+                        <div class="message bot-message">
+                            <strong>🤖 Exam Prep Bot:</strong> Welcome to your personal exam preparation assistant! I'm here to help you study with interactive questions and detailed explanations.
+                            <br><br>
+                            Choose your subject and difficulty level, and I'll provide you with practice questions. You can also ask me to explain concepts or request specific topics!
+                        </div>
+                    </div>
+
+                    <div class="quick-actions">
+                        <button class="quick-btn" onclick="startQuiz('Python', 'Easy')">Python - Easy</button>
+                        <button class="quick-btn" onclick="startQuiz('Python', 'Medium')">Python - Medium</button>
+                        <button class="quick-btn" onclick="startQuiz('Python', 'Hard')">Python - Hard</button>
+                        <button class="quick-btn" onclick="startQuiz('JavaScript', 'Easy')">JavaScript - Easy</button>
+                        <button class="quick-btn" onclick="startQuiz('JavaScript', 'Medium')">JavaScript - Medium</button>
+                        <button class="quick-btn" onclick="startQuiz('Java', 'Easy')">Java - Easy</button>
+                    </div>
+
+                    <div class="typing-indicator" id="typingIndicator">
+                        Bot is typing...
+                        <div class="typing-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="chatInput" placeholder="Ask for questions, explanations, or specific topics..." onkeypress="handleKeyPress(event)">
+                        <button class="btn btn-gradient" onclick="sendMessage()">
+                            <i class="fas fa-paper-plane"></i> Send
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="glass-card p-4">
+                    <h5 class="text-white mb-3"><i class="fas fa-cog"></i> Study Settings</h5>
+                    <div class="mb-3">
+                        <label class="form-label text-white">Subject</label>
+                        <select class="form-select" id="subject">
+                            <option value="Python">Python Programming</option>
+                            <option value="JavaScript">JavaScript</option>
+                            <option value="Java">Java Programming</option>
+                            <option value="DataScience">Data Science</option>
+                            <option value="WebDev">Web Development</option>
+                            <option value="AI">Artificial Intelligence</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-white">Difficulty</label>
+                        <select class="form-select" id="difficulty">
+                            <option value="Easy">Easy</option>
+                            <option value="Medium">Medium</option>
+                            <option value="Hard">Hard</option>
+                            <option value="Extreme">Extreme</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-gradient w-100 mb-3" onclick="getRandomQuestion()">
+                        <i class="fas fa-random"></i> Get Random Question
+                    </button>
+                    <button class="btn btn-gradient w-100" onclick="resetSession()">
+                        <i class="fas fa-refresh"></i> Reset Session
+                    </button>
+                </div>
+
+                <div class="glass-card p-4 mt-4">
+                    <h5 class="text-white mb-3"><i class="fas fa-lightbulb"></i> Quick Tips</h5>
+                    <div class="text-white-50">
+                        <small>
+                            • Start with Easy questions to build confidence<br>
+                            • Ask for explanations when you don't understand<br>
+                            • Try different subjects to broaden knowledge<br>
+                            • Use "Explain [topic]" for concept clarification<br>
+                            • Practice regularly for best results
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Question bank with different difficulty levels
+        const questionBank = {
+            Python: {
+                Easy: [
+                    {
+                        question: "What is a variable in Python?",
+                        answer: "A variable is a container for storing data values. In Python, you don't need to declare the type of variable - Python automatically determines it based on the value assigned.",
+                        example: "x = 5  # integer\nname = 'John'  # string\npi = 3.14  # float"
+                    },
+                    {
+                        question: "How do you print 'Hello World' in Python?",
+                        answer: "Use the print() function to output text to the console.",
+                        example: "print('Hello World')\n# Output: Hello World"
+                    },
+                    {
+                        question: "What are the basic data types in Python?",
+                        answer: "Python has several built-in data types including int (integers), float (decimal numbers), str (strings), bool (boolean), list, tuple, dict (dictionary), and set.",
+                        example: "integer = 42\nfloat_num = 3.14\ntext = 'Hello'\nis_true = True"
+                    },
+                    {
+                        question: "How do you create a list in Python?",
+                        answer: "Lists are created using square brackets [] and can contain multiple values separated by commas.",
+                        example: "fruits = ['apple', 'banana', 'orange']\nnumbers = [1, 2, 3, 4, 5]\nmixed = [1, 'hello', 3.14, True]"
+                    }
+                ],
+                Medium: [
+                    {
+                        question: "Explain the difference between list and tuple in Python.",
+                        answer: "Lists are mutable (can be changed after creation) while tuples are immutable (cannot be changed). Lists use square brackets [], tuples use parentheses ().",
+                        example: "# List (mutable)\nmy_list = [1, 2, 3]\nmy_list[0] = 10  # This works\n\n# Tuple (immutable)\nmy_tuple = (1, 2, 3)\n# my_tuple[0] = 10  # This would cause an error"
+                    },
+                    {
+                        question: "How do you handle exceptions in Python?",
+                        answer: "Use try-except blocks to handle exceptions. The try block contains code that might raise an exception, and except blocks handle specific exceptions.",
+                        example: "try:\n    result = 10 / 0\nexcept ZeroDivisionError:\n    print('Cannot divide by zero!')\nexcept Exception as e:\n    print(f'An error occurred: {e}')"
+                    },
+                    {
+                        question: "What is list comprehension in Python?",
+                        answer: "List comprehension is a concise way to create lists. It consists of brackets containing an expression followed by a for clause, then zero or more for or if clauses.",
+                        example: "# Traditional way\nsquares = []\nfor i in range(10):\n    squares.append(i**2)\n\n# List comprehension\nsquares = [i**2 for i in range(10)]\n\n# With condition\neven_squares = [i**2 for i in range(10) if i % 2 == 0]"
+                    }
+                ],
+                Hard: [
+                    {
+                        question: "Explain Python decorators and provide an example.",
+                        answer: "Decorators are a way to modify or enhance functions without permanently modifying their code. They're essentially functions that take another function as argument and extend its behavior.",
+                        example: "def my_decorator(func):\n    def wrapper():\n        print('Before function call')\n        func()\n        print('After function call')\n    return wrapper\n\n@my_decorator\ndef say_hello():\n    print('Hello!')\n\nsay_hello()\n# Output:\n# Before function call\n# Hello!\n# After function call"
+                    },
+                    {
+                        question: "What are Python generators and how do they work?",
+                        answer: "Generators are functions that return an iterator object. They use 'yield' keyword instead of 'return' and generate values on-demand, making them memory efficient for large datasets.",
+                        example: "def fibonacci_generator(n):\n    a, b = 0, 1\n    for _ in range(n):\n        yield a\n        a, b = b, a + b\n\n# Usage\nfib = fibonacci_generator(5)\nfor num in fib:\n    print(num)  # 0, 1, 1, 2, 3"
+                    }
+                ],
+                Extreme: [
+                    {
+                        question: "Implement a metaclass in Python and explain its purpose.",
+                        answer: "Metaclasses are 'classes of classes' that define how classes are created. They control class creation and can modify class attributes and methods before the class is instantiated.",
+                        example: "class SingletonMeta(type):\n    _instances = {}\n    \n    def __call__(cls, *args, **kwargs):\n        if cls not in cls._instances:\n            cls._instances[cls] = super().__call__(*args, **kwargs)\n        return cls._instances[cls]\n\nclass Singleton(metaclass=SingletonMeta):\n    def __init__(self, value):\n        self.value = value\n\n# Usage\na = Singleton('first')\nb = Singleton('second')\nprint(a is b)  # True - same instance"
+                    }
+                ]
+            },
+            JavaScript: {
+                Easy: [
+                    {
+                        question: "What is the difference between let, const, and var?",
+                        answer: "var has function scope and can be redeclared, let has block scope and can be reassigned but not redeclared, const has block scope and cannot be reassigned or redeclared.",
+                        example: "var x = 1;  // function scoped\nlet y = 2;  // block scoped, can reassign\nconst z = 3;  // block scoped, cannot reassign\n\ny = 4;  // OK\n// z = 5;  // Error!"
+                    },
+                    {
+                        question: "How do you create an array in JavaScript?",
+                        answer: "Arrays can be created using array literals [] or the Array constructor.",
+                        example: "// Array literal\nlet fruits = ['apple', 'banana', 'orange'];\n\n// Array constructor\nlet numbers = new Array(1, 2, 3, 4);\n\n// Empty array\nlet empty = [];"
+                    }
+                ],
+                Medium: [
+                    {
+                        question: "Explain JavaScript closures with an example.",
+                        answer: "A closure is a function that has access to variables in its outer (enclosing) scope even after the outer function has returned. It 'closes over' these variables.",
+                        example: "function outerFunction(x) {\n    return function innerFunction(y) {\n        return x + y;  // x is from outer scope\n    };\n}\n\nconst addFive = outerFunction(5);\nconsole.log(addFive(3)); // 8\n// Inner function still has access to x"
+                    }
+                ],
+                Hard: [
+                    {
+                        question: "What is the event loop in JavaScript?",
+                        answer: "The event loop is what allows JavaScript to perform non-blocking operations. It continuously monitors the call stack and callback queue, moving callbacks to the stack when it's empty.",
+                        example: "console.log('Start');\n\nsetTimeout(() => {\n    console.log('Timeout');\n}, 0);\n\nPromise.resolve().then(() => {\n    console.log('Promise');\n});\n\nconsole.log('End');\n\n// Output: Start, End, Promise, Timeout"
+                    }
+                ]
+            },
+            Java: {
+                Easy: [
+                    {
+                        question: "What is a class in Java?",
+                        answer: "A class is a blueprint or template for creating objects. It defines the attributes (variables) and methods (functions) that objects of that class will have.",
+                        example: "public class Car {\n    // Attributes\n    private String brand;\n    private int year;\n    \n    // Constructor\n    public Car(String brand, int year) {\n        this.brand = brand;\n        this.year = year;\n    }\n    \n    // Method\n    public void start() {\n        System.out.println(brand + \" is starting!\");\n    }\n}"
+                    }
+                ],
+                Medium: [
+                    {
+                        question: "Explain inheritance in Java with an example.",
+                        answer: "Inheritance allows a class to inherit properties and methods from another class. The child class extends the parent class using the 'extends' keyword.",
+                        example: "// Parent class\nclass Animal {\n    protected String name;\n    \n    public void eat() {\n        System.out.println(name + \" is eating\");\n    }\n}\n\n// Child class\nclass Dog extends Animal {\n    public Dog(String name) {\n        this.name = name;\n    }\n    \n    public void bark() {\n        System.out.println(name + \" is barking\");\n    }\n}"
+                    }
+                ]
+            }
+        };
+
+        // Session variables
+        let currentScore = 0;
+        let totalQuestions = 0;
+        let correctAnswers = 0;
+        let currentQuestion = null;
+        let awaitingAnswer = false;
+
+        function addMessage(content, isUser = false, isQuestion = false, isAnswer = false) {
+            const chatContainer = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+
+            if (isQuestion) {
+                messageDiv.className = 'question-card';
+                messageDiv.innerHTML = `<strong><i class="fas fa-question-circle"></i> Question:</strong><br>${content}`;
+            } else if (isAnswer) {
+                messageDiv.className = 'answer-card';
+                messageDiv.innerHTML = `<strong><i class="fas fa-lightbulb"></i> Answer:</strong><br>${content}`;
+            } else {
+                messageDiv.className = `message ${isUser ? 'user' : 'bot'}-message`;
+                messageDiv.innerHTML = isUser ? content : `<strong>🤖 Exam Prep Bot:</strong> ${content}`;
+            }
+
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function showTyping() {
+            document.getElementById('typingIndicator').style.display = 'flex';
+        }
+
+        function hideTyping() {
+            document.getElementById('typingIndicator').style.display = 'none';
+        }
+
+        function updateStats() {
+            document.getElementById('score').textContent = currentScore;
+            document.getElementById('totalQuestions').textContent = totalQuestions;
+            document.getElementById('correctAnswers').textContent = correctAnswers;
+            document.getElementById('accuracy').textContent = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) + '%' : '0%';
+        }
+
+        function getRandomQuestion() {
+            const subject = document.getElementById('subject').value;
+            const difficulty = document.getElementById('difficulty').value;
+
+            if (questionBank[subject] && questionBank[subject][difficulty]) {
+                const questions = questionBank[subject][difficulty];
+                const randomQuestion = questions[Math.floor(Math.random() * questions.length)];
+
+                currentQuestion = randomQuestion;
+                awaitingAnswer = true;
+
+                showTyping();
+                setTimeout(() => {
+                    hideTyping();
+                    addMessage(`${randomQuestion.question}`, false, true);
+                    addMessage(`Think about it and type your answer, or type "show answer" to see the solution. <span class="difficulty-badge ${difficulty.toLowerCase()}">${difficulty}</span>`, false);
+                }, 1000);
+            }
+        }
+
+        function startQuiz(subject, difficulty) {
+            document.getElementById('subject').value = subject;
+            document.getElementById('difficulty').value = difficulty;
+
+            addMessage(`Starting ${subject} quiz at ${difficulty} level!`, false);
+            setTimeout(() => {
+                getRandomQuestion();
+            }, 500);
+        }
+
+        function checkAnswer(userAnswer) {
+            if (!currentQuestion) return;
+
+            totalQuestions++;
+
+            // Simple answer checking (you can make this more sophisticated)
+            const correctKeywords = currentQuestion.answer.toLowerCase().split(' ');
+            const userKeywords = userAnswer.toLowerCase().split(' ');
+            const matches = userKeywords.filter(word => correctKeywords.includes(word)).length;
+            const isCorrect = matches > 2; // Simple heuristic
+
+            if (isCorrect) {
+                correctAnswers++;
+                currentScore += 10;
+                addMessage("🎉 Great job! That's correct!", false);
+            } else {
+                addMessage("🤔 Not quite right, but good attempt!", false);
+            }
+
+            showAnswer();
+            updateStats();
+            awaitingAnswer = false;
+            currentQuestion = null;
+
+            setTimeout(() => {
+                addMessage("Would you like another question? Just click 'Get Random Question' or ask for a specific topic!", false);
+            }, 2000);
+        }
+
+        function showAnswer() {
+            if (!currentQuestion) return;
+
+            let content = currentQuestion.answer;
+            if (currentQuestion.example) {
+                content += `<br><br><strong>Example:</strong><br><pre style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 5px; margin-top: 10px;"><code>${currentQuestion.example}</code></pre>`;
+            }
+
+            addMessage(content, false, false, true);
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            addMessage(message, true);
+            input.value = '';
+
+            // Process the message
+            showTyping();
+            setTimeout(() => {
+                hideTyping();
+                processMessage(message);
+            }, 1000);
+        }
+
+        function processMessage(message) {
+            const lowerMessage = message.toLowerCase();
+
+            if (awaitingAnswer && currentQuestion) {
+                if (lowerMessage.includes('show answer') || lowerMessage.includes('give answer')) {
+                    showAnswer();
+                    awaitingAnswer = false;
+                    totalQuestions++;
+                    updateStats();
+                    addMessage("Here's the answer! Would you like to try another question?", false);
+                } else {
+                    checkAnswer(message);
+                }
+                return;
+            }
+
+            // Handle different types of requests
+            if (lowerMessage.includes('question') || lowerMessage.includes('quiz')) {
+                getRandomQuestion();
+            } else if (lowerMessage.includes('explain') || lowerMessage.includes('what is')) {
+                const topic = message.replace(/explain|what is|how|why/gi, '').trim();
+                addMessage(`I'd be happy to explain ${topic}! For detailed explanations, try asking for a question about ${topic} or specify a subject like Python, JavaScript, or Java.`, false);
+            } else if (lowerMessage.includes('python')) {
+                document.getElementById('subject').value = 'Python';
+                addMessage("Great! I've set the subject to Python. What difficulty would you like? Easy, Medium, Hard, or Extreme?", false);
+            } else if (lowerMessage.includes('javascript')) {
+                document.getElementById('subject').value = 'JavaScript';
+                addMessage("Excellent! I've set the subject to JavaScript. What difficulty level interests you?", false);
+            } else if (lowerMessage.includes('java') && !lowerMessage.includes('javascript')) {
+                document.getElementById('subject').value = 'Java';
+                addMessage("Perfect! I've set the subject to Java. Ready for some object-oriented programming questions?", false);
+            } else if (lowerMessage.includes('easy')) {
+                document.getElementById('difficulty').value = 'Easy';
+                addMessage("Set to Easy difficulty! These questions are great for building fundamentals. Ready for a question?", false);
+            } else if (lowerMessage.includes('medium')) {
+                document.getElementById('difficulty').value = 'Medium';
+                addMessage("Set to Medium difficulty! These questions will challenge your understanding. Shall we start?", false);
+            } else if (lowerMessage.includes('hard')) {
+                document.getElementById('difficulty').value = 'Hard';
+                addMessage("Set to Hard difficulty! These are advanced concepts. Are you ready for the challenge?", false);
+            } else if (lowerMessage.includes('extreme')) {
+                document.getElementById('difficulty').value = 'Extreme';
+                addMessage("Set to Extreme difficulty! These are expert-level questions. Prepare yourself!", false);
+            } else if (lowerMessage.includes('help')) {
+                addMessage(`Here's how I can help you study:
+                <br>• Ask for questions: "Give me a Python question" or "Quiz me on JavaScript"
+                <br>• Set difficulty: "I want easy questions" or "Make it hard"
+                <br>• Get explanations: "Explain variables" or "What is inheritance?"
+                <br>• Show answers: Type "show answer" when answering a question
+                <br>• Use quick buttons above for fast access to different subjects and difficulties`, false);
+            } else if (lowerMessage.includes('score') || lowerMessage.includes('stats')) {
+                addMessage(`Your current stats:
+                <br>📊 Score: ${currentScore} points
+                <br>📝 Questions attempted: ${totalQuestions}
+                <br>✅ Correct answers: ${correctAnswers}
+                <br>🎯 Accuracy: ${totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0}%`, false);
+            } else if (lowerMessage.includes('reset')) {
+                resetSession();
+                addMessage("Session reset! Your stats have been cleared. Ready to start fresh?", false);
+            } else {
+                // Default response
+                addMessage(`I understand you're interested in "${message}". I can help you study with interactive questions and explanations! Try asking for:
+                <br>• A question about a specific topic
+                <br>• Setting a difficulty level (easy, medium, hard, extreme)
+                <br>• Choosing a subject (Python, JavaScript, Java)
+                <br>• Or just click the quick action buttons above!`, false);
+            }
+        }
+
+        function resetSession() {
+            currentScore = 0;
+            totalQuestions = 0;
+            correctAnswers = 0;
+            currentQuestion = null;
+            awaitingAnswer = false;
+            updateStats();
+
+            // Clear chat
+            const chatContainer = document.getElementById('chatContainer');
+            chatContainer.innerHTML = `
+                <div class="message bot-message">
+                    <strong>🤖 Exam Prep Bot:</strong> Session reset! Welcome back to your personal exam preparation assistant! Choose your subject and difficulty level to get started with practice questions.
+                </div>
+            `;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStats();
+
+            // Add some welcome tips after a delay
+            setTimeout(() => {
+                addMessage("💡 Tip: Use the quick action buttons above to jump right into practice questions, or type what you'd like to study!", false);
+            }, 3000);
+        });
+    </script>
+</body>
+</html>
